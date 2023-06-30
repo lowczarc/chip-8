@@ -34,7 +34,7 @@ fn main() {
     let mut cpu = CPU::new();
     let mut ram = RAM::new();
 
-    ram.load_program_from_file("../ch8-asm/basic.ch8")
+    ram.load_program_from_file("../asm/basic.ch8")
         .unwrap();
 
     let mut last_dt = SystemTime::now();
