@@ -96,7 +96,7 @@ class Param:
             return 'addr', int(input[2:], 16)
         elif len(input) == 6 and input[:2] == '0X':
             return '16b', int(input[2:], 16)
-        elif input in ['I', 'DT', 'ST', 'B', 'F', '[I]']:
+        elif input in ['I', 'DT', 'ST', 'B', 'F', '[I]', 'K']:
             return input, None
         elif input.startswith('=') and input[1:] in labels:
             return 'addr', labels[input[1:]]

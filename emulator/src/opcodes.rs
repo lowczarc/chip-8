@@ -1,5 +1,6 @@
 use crate::display::Display;
 use crate::state::{CPU, RAM};
+use std::{thread, time};
 
 pub fn sys(cpu: &mut CPU, ram: &mut RAM, display: &mut Display, instr: [u8; 2]) {
     match (instr[0], instr[1]) {
@@ -169,8 +170,43 @@ pub fn drw(cpu: &mut CPU, ram: &mut RAM, display: &mut Display, instr: [u8; 2]) 
     cpu.r[0xf] = if col { 1 } else { 0 };
 }
 
+pub fn skp(cpu: &mut CPU, display: &mut Display, x: usize) {
+    if display.check_key_press(cpu.r[x]) {
+        cpu.pc += 2;
+    }
+}
+
+pub fn sknp(cpu: &mut CPU, display: &mut Display, x: usize) {
+    if !display.check_key_press(cpu.r[x]) {
+        cpu.pc += 2;
+    }
+}
+
+pub fn ope(cpu: &mut CPU, display: &mut Display, instr: [u8; 2]) {
+    let x = (instr[0] & 0xf) as usize;
+
+    match instr[1] {
+        0x9e => skp(cpu, display, x),
+        0xa1 => sknp(cpu, display, x),
+        _ => (),
+    }
+}
+
 pub fn ldf07(cpu: &mut CPU, x: usize) {
     cpu.r[x] = cpu.dt;
+}
+
+pub fn ldf0a(cpu: &mut CPU, display: &mut Display, x: usize) {
+    loop {
+        for i in 0..0x10 {
+            if display.check_key_press(i) {
+                cpu.r[x] = i;
+                return;
+            }
+        }
+        thread::sleep(time::Duration::from_millis(10));
+        display.update();
+    }
 }
 
 pub fn ldf15(cpu: &mut CPU, x: usize) {
@@ -203,16 +239,16 @@ pub fn ldf65(cpu: &mut CPU, ram: &mut RAM, x: usize) {
     }
 }
 
-pub fn opf(cpu: &mut CPU, ram: &mut RAM, instr: [u8; 2]) {
+pub fn opf(cpu: &mut CPU, ram: &mut RAM, display: &mut Display, instr: [u8; 2]) {
     let x = (instr[0] & 0xf) as usize;
 
     match instr[1] {
         0x07 => ldf07(cpu, x),
-        0x0a => (), // TODO: Wait for keyboard
+        0x0a => ldf0a(cpu, display, x),
         0x15 => ldf15(cpu, x),
         0x18 => ldf18(cpu, x),
         0x1e => addf1e(cpu, x),
-        0x29 => (), // TODO: Location of sprite
+        0x29 => (), // TODO: Location of sprites
         0x33 => ldf33(cpu, ram, x),
         0x55 => ldf55(cpu, ram, x),
         0x65 => ldf65(cpu, ram, x),
