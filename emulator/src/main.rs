@@ -1,13 +1,15 @@
 pub mod audio;
+pub mod consts;
 pub mod display;
 pub mod opcodes;
 pub mod state;
 
 use audio::Audio;
+use consts::{CPU_SLEEP_TIME_MICROS, DISPLAY_UPDATE_SLEEP_TIME_MICROS};
 use display::Display;
 use state::{CPU, RAM};
-use std::time::SystemTime;
 use std::env;
+use std::time::SystemTime;
 
 pub fn exec(cpu: &mut CPU, ram: &mut RAM, display: &mut Display, instr: [u8; 2]) {
     let opcode = instr[0] >> 4;
@@ -39,7 +41,7 @@ fn main() {
 
     if env::args().len() != 2 {
         println!("Usage: chip-8-emulator <rom.ch8>");
-        return
+        return;
     }
 
     let rom = env::args().nth(1);
@@ -58,11 +60,12 @@ fn main() {
 
         cpu.pc += 2;
 
+        std::thread::sleep(std::time::Duration::from_micros(CPU_SLEEP_TIME_MICROS));
         if SystemTime::now()
             .duration_since(last_dt)
             .unwrap()
             .as_micros()
-            > 16666
+            > DISPLAY_UPDATE_SLEEP_TIME_MICROS as u128
         {
             if cpu.dt != 0 {
                 cpu.dt -= 1;

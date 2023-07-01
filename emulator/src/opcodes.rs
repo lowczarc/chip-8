@@ -1,3 +1,6 @@
+use crate::consts::{
+    DISPLAY_UPDATE_SLEEP_TIME_MICROS, FONT_START_ADDRESS, RNG_INCREMENT, RNG_MULTIPLIER,
+};
 use crate::display::Display;
 use crate::state::{CPU, RAM};
 use std::{thread, time};
@@ -151,7 +154,7 @@ pub fn jpb(cpu: &mut CPU, instr: [u8; 2]) {
 }
 
 pub fn rnd(cpu: &mut CPU, instr: [u8; 2]) {
-    cpu.rng = (1103515245 * cpu.rng + 12345) & 0xffffffff;
+    cpu.rng = (RNG_MULTIPLIER * cpu.rng + RNG_INCREMENT) & 0xffffffff;
 
     cpu.r[(instr[0] & 0xf) as usize] = cpu.rng as u8 & instr[1];
 }
@@ -204,7 +207,9 @@ pub fn ldf0a(cpu: &mut CPU, display: &mut Display, x: usize) {
                 return;
             }
         }
-        thread::sleep(time::Duration::from_millis(10));
+        thread::sleep(time::Duration::from_micros(
+            DISPLAY_UPDATE_SLEEP_TIME_MICROS,
+        ));
         display.update();
     }
 }
@@ -222,7 +227,7 @@ pub fn addf1e(cpu: &mut CPU, x: usize) {
 }
 
 pub fn ldf29(cpu: &mut CPU, x: usize) {
-    cpu.i = 0x22 + (5*(cpu.r[x]&0xf)) as u16;
+    cpu.i = FONT_START_ADDRESS + (5 * (cpu.r[x] & 0xf)) as u16;
 }
 
 pub fn ldf33(cpu: &mut CPU, ram: &mut RAM, x: usize) {

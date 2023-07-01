@@ -1,3 +1,4 @@
+use crate::consts::{INITIAL_ROM_FILE, PROGRAM_START_ADDRESS, STACK_START_ADDRESS};
 use std::fs::File;
 use std::io::Read;
 use std::time::SystemTime;
@@ -27,8 +28,8 @@ impl CPU {
             dt: 0,
             st: 0,
 
-            pc: 0x200,
-            sp: 0x002,
+            pc: PROGRAM_START_ADDRESS,
+            sp: STACK_START_ADDRESS,
 
             rng: SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)
@@ -45,9 +46,9 @@ impl RAM {
     pub fn new() -> Self {
         let mut buffer = [0; 0x1000];
 
-        let mut f = File::open("./assets/initial_rom.ch8").unwrap();
+        let mut f = File::open(INITIAL_ROM_FILE).unwrap();
 
-        f.read(&mut buffer[..0x200]).unwrap();
+        f.read(&mut buffer[..(PROGRAM_START_ADDRESS as usize)]).unwrap();
 
         Self(buffer)
     }
@@ -55,7 +56,7 @@ impl RAM {
     pub fn load_program_from_file(&mut self, filename: &str) -> Result<(), std::io::Error> {
         let mut f = File::open(filename)?;
 
-        f.read(&mut self.0[0x200..])?;
+        f.read(&mut self.0[(PROGRAM_START_ADDRESS as usize)..])?;
 
         Ok(())
     }
