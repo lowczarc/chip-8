@@ -28,7 +28,7 @@ impl CPU {
             st: 0,
 
             pc: 0x200,
-            sp: 0x000,
+            sp: 0x002,
 
             rng: SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)
@@ -43,7 +43,13 @@ pub struct RAM(pub [u8; 0x1000]);
 
 impl RAM {
     pub fn new() -> Self {
-        Self([0; 0x1000])
+        let mut buffer = [0; 0x1000];
+
+        let mut f = File::open("./assets/initial_rom.ch8").unwrap();
+
+        f.read(&mut buffer[..0x200]).unwrap();
+
+        Self(buffer)
     }
 
     pub fn load_program_from_file(&mut self, filename: &str) -> Result<(), std::io::Error> {

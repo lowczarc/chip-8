@@ -1,4 +1,4 @@
-import sys
+import argparse
 
 instructions = [
     { "opcode": "SYS", "params": [
@@ -154,15 +154,15 @@ class Instruction:
         return first_byte, second_byte
 
 def main():
-    if len(sys.argv) < 3:
-        print("Usage: chip8-asm <filename.c8asm> <output.ch8>")
-        return
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input_file", help="The input file in the chip-8 asm format (e.g. basic.c8asm)")
+    parser.add_argument("output_file", help="The output chip-8 rom filename (e.g. basic.ch8)")
+    parser.add_argument("--starting_address", "-a", default="0x200", help="The starting address of the program (default 0x200)")
+    args = parser.parse_args()
 
-    filename = sys.argv[1]
+    f = open(args.input_file, "r")
 
-    f = open(filename, "r")
-
-    starting_address = 0x200
+    starting_address = int(args.starting_address, 16)
     lines = []
     labels = {}
     # Preprocess
@@ -178,6 +178,7 @@ def main():
             lines.append(line_without_comment)
             starting_address += 2
 
+    print(labels)
     program = []
     # Compile
     for line in lines:
@@ -190,10 +191,9 @@ def main():
         program.append(first_byte)
         program.append(second_byte)
 
-    if len(sys.argv) > 2:
-        output = open(sys.argv[2], "wb")
-        output.write(bytearray(program))
-        output.close()
+    output = open(args.output_file, "wb")
+    output.write(bytearray(program))
+    output.close()
 
 if __name__ == "__main__":
     main()

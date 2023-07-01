@@ -7,6 +7,7 @@ use audio::Audio;
 use display::Display;
 use state::{CPU, RAM};
 use std::time::SystemTime;
+use std::env;
 
 pub fn exec(cpu: &mut CPU, ram: &mut RAM, display: &mut Display, instr: [u8; 2]) {
     let opcode = instr[0] >> 4;
@@ -36,7 +37,16 @@ fn main() {
     let mut cpu = CPU::new();
     let mut ram = RAM::new();
 
-    ram.load_program_from_file("../asm/basic.ch8").unwrap();
+    if env::args().len() != 2 {
+        println!("Usage: chip-8-emulator <rom.ch8>");
+        return
+    }
+
+    let rom = env::args().nth(1);
+
+    println!("Starting {:?}...", rom.clone().unwrap());
+
+    ram.load_program_from_file(&rom.unwrap()).unwrap();
 
     let mut last_dt = SystemTime::now();
     let mut display = Display::new();

@@ -221,6 +221,10 @@ pub fn addf1e(cpu: &mut CPU, x: usize) {
     cpu.i += cpu.r[x] as u16;
 }
 
+pub fn ldf29(cpu: &mut CPU, x: usize) {
+    cpu.i = 0x22 + (5*(cpu.r[x]&0xf)) as u16;
+}
+
 pub fn ldf33(cpu: &mut CPU, ram: &mut RAM, x: usize) {
     ram.0[cpu.i as usize] = cpu.r[x] / 100;
     ram.0[cpu.i as usize + 1] = cpu.r[x] % 100 / 10;
@@ -248,7 +252,7 @@ pub fn opf(cpu: &mut CPU, ram: &mut RAM, display: &mut Display, instr: [u8; 2]) 
         0x15 => ldf15(cpu, x),
         0x18 => ldf18(cpu, x),
         0x1e => addf1e(cpu, x),
-        0x29 => (), // TODO: Location of sprites
+        0x29 => ldf29(cpu, x),
         0x33 => ldf33(cpu, ram, x),
         0x55 => ldf55(cpu, ram, x),
         0x65 => ldf65(cpu, ram, x),
